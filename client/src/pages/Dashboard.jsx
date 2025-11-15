@@ -194,11 +194,11 @@ export default function Dashboard() {
 
       {/* Dollar Index (DXY) Widget */}
       <div className="bg-gradient-to-r from-green-500/20 via-emerald-500/10 to-green-500/20 rounded-lg p-4 md:p-6 border-2 border-green-500/50">
-        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 lg:gap-0">
-          <div className="flex items-center gap-4">
-            <DollarSign className="w-8 h-8 text-green-400 flex-shrink-0" />
-            <div>
-              <h3 className="text-lg font-bold mb-1 flex items-center gap-2">
+        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6 lg:gap-4">
+          <div className="flex items-center gap-3 md:gap-4">
+            <DollarSign className="w-6 md:w-8 h-6 md:h-8 text-green-400 flex-shrink-0" />
+            <div className="min-w-0">
+              <h3 className="text-base md:text-lg font-bold mb-1 flex items-center gap-2">
                 💵 Dollar Index (DXY)
                 <InfoTooltip 
                   title="US Dollar Index (DXY)"
@@ -206,45 +206,47 @@ export default function Dashboard() {
                   details="📊 Historical Context: • 1973-1985: Ranged 80-165 (peak during Volcker era) • 1985-2008: Generally declined from 165 to 70s • 2008-2017: Rose from 70s to 100+ (post-crisis strength) • 2017-2020: Ranged 88-103 • 2020-2022: Surged to 114+ (pandemic/inflation response) • 2023-Present: Moderating around 100-110 📈 Interpretation: • 80-90: Weak dollar (good for exports, commodities) • 90-100: Moderate strength • 100-110: Strong dollar (pressure on EM, commodities) • 110+: Very strong (potential global stress) 🌍 Global Impact: High DXY creates headwinds for emerging markets, commodities, and US multinationals while supporting Treasury demand."
                 />
               </h3>
-              <div className="text-3xl font-bold text-green-400">
+              <div className="text-2xl md:text-3xl font-bold text-green-400">
                 {dxyData?.value?.toFixed(2) || '104.25'}
-                <span className="text-lg text-textSecondary ml-2">DXY</span>
+                <span className="text-base md:text-lg text-textSecondary ml-2">DXY</span>
               </div>
             </div>
           </div>
 
-          <div className="flex flex-col items-center px-8 border-l border-r border-border">
-            <div className={`text-2xl font-bold mb-2 ${
+          <div className="flex flex-col items-center px-4 md:px-8 lg:border-l lg:border-r border-border">
+            <div className={`text-xl md:text-2xl font-bold mb-2 ${
               dxyData?.changePercent >= 0 ? 'text-success' : 'text-danger'
             }`}>
               {dxyData?.changePercent >= 0 ? '+' : ''}{dxyData?.changePercent?.toFixed(2) || '+0.14'}%
             </div>
-            <div className="text-sm text-textSecondary text-center">
+            <div className="text-xs md:text-sm text-textSecondary text-center">
               Daily Change
             </div>
           </div>
 
-          <div className="flex items-center gap-6">
+          <div className="flex items-center gap-4 md:gap-6">
             <div className="text-center">
               <div className="text-xs text-textSecondary uppercase mb-1">
                 Strength
               </div>
-              <div className="text-2xl font-bold text-green-400">
+              <div className="text-xl md:text-2xl font-bold text-green-400">
                 {dxyData?.value > 105 ? 'STRONG' : dxyData?.value > 100 ? 'MOD' : 'WEAK'}
               </div>
             </div>
-            <ChevronRight className="w-6 h-6 text-textSecondary ml-4" />
+            <ChevronRight className="w-5 md:w-6 h-5 md:h-6 text-textSecondary" />
           </div>
         </div>
 
-        <div className="mt-4 pt-4 border-t border-border flex items-center justify-between text-sm">
-          <div className="flex items-center gap-6 text-textSecondary">
-            <span>• US Dollar strength vs major currencies</span>
-            <span>• Global market impact indicator</span>
-            <span>• Real-time currency risk assessment</span>
-          </div>
-          <div className="text-xs text-textSecondary">
-            Updated: {dxyData?.timestamp ? new Date(dxyData.timestamp).toLocaleTimeString() : 'Loading...'}
+        <div className="mt-4 pt-4 border-t border-border">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 md:gap-6">
+            <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-6 text-xs md:text-sm text-textSecondary">
+              <span>• US Dollar strength vs major currencies</span>
+              <span>• Global market impact indicator</span>
+              <span className="hidden md:inline">• Real-time currency risk assessment</span>
+            </div>
+            <div className="text-xs text-textSecondary">
+              Updated: {dxyData?.timestamp ? new Date(dxyData.timestamp).toLocaleTimeString() : 'Loading...'}
+            </div>
           </div>
         </div>
       </div>
@@ -253,19 +255,19 @@ export default function Dashboard() {
       <BigLieIndexWidget />
 
       {/* Key Insights */}
-      <div className="bg-surface rounded-lg p-6 border border-border">
-        <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
-          <AlertTriangle className="w-5 h-5 text-warning" />
+      <div className="bg-surface rounded-lg p-4 md:p-6 border border-border">
+        <h2 className="text-lg md:text-xl font-bold mb-4 flex items-center gap-2">
+          <AlertTriangle className="w-4 md:w-5 h-4 md:h-5 text-warning" />
           Key Insights
         </h2>
-        <div className="space-y-3">
+        <div className="space-y-4">
           {keyInsights.map((insight, index) => (
-            <div key={index} className="flex items-start gap-3 p-3 bg-surfaceHover rounded-lg hover:bg-border transition-all">
-              <insight.icon className={`w-5 h-5 mt-0.5 ${getSeverityColor(insight.severity)}`} />
-              <div className="flex-1">
-                <p className="text-sm text-textPrimary">{insight.message}</p>
+            <div key={index} className="flex items-start gap-3 p-3 md:p-4 bg-surfaceHover rounded-lg hover:bg-border transition-all">
+              <insight.icon className={`w-4 md:w-5 h-4 md:h-5 mt-1 flex-shrink-0 ${getSeverityColor(insight.severity)}`} />
+              <div className="flex-1 min-w-0">
+                <p className="text-sm md:text-base text-textPrimary leading-relaxed">{insight.message}</p>
               </div>
-              <button className="text-xs text-primary hover:underline whitespace-nowrap">
+              <button className="text-xs md:text-sm text-primary hover:underline whitespace-nowrap flex-shrink-0">
                 {insight.action} →
               </button>
             </div>
