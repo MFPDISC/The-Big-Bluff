@@ -1,0 +1,43 @@
+{
+  "name": "the-big-bluff-dashboard",
+  "version": "1.0.0",
+  "description": "Economic analysis dashboard for predicting tech sector systemic risks",
+  "main": "server/index.js",
+  "type": "module",
+  "scripts": {
+    "dev": "nodemon server/index.js",
+    "start": "node server/index.js",
+    "setup-db": "node server/db/setup.js",
+    "seed": "node server/db/seed.js",
+    "seed:maturity": "node server/db/seedMaturityData.js",
+    "seed:top100": "node server/db/seedTop100.js",
+    "seed:historical": "node server/db/seedHistoricalMaturity.js",
+    "fetch-data": "node server/jobs/initialFetch.js",
+    "client": "cd client && npm run dev",
+    "server": "nodemon server/index.js",
+    "both": "concurrently \"npm run server\" \"npm run client\""
+  },
+  "keywords": ["finance", "analysis", "bitcoin", "stocks", "debt", "risk"],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.18.2",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "pg": "^8.11.3",
+    "redis": "^4.6.10",
+    "axios": "^1.6.2",
+    "node-cron": "^3.0.3",
+    "socket.io": "^4.6.2",
+    "bull": "^4.12.0",
+    "helmet": "^7.1.0",
+    "compression": "^1.7.4",
+    "winston": "^3.11.0",
+    "yahoo-finance2": "^2.11.2",
+    "express-rate-limit": "^7.1.5"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.2",
+    "concurrently": "^8.2.2"
+  }
+}
