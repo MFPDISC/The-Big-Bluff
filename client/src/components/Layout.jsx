@@ -53,7 +53,7 @@ export default function Layout({ children }) {
   const activeAlerts = alerts.filter(a => a.is_active).length;
 
   return (
-    <div className="flex h-screen bg-background">
+    <div className="flex h-screen bg-background overflow-x-hidden max-w-full">
       {/* Mobile Overlay */}
       {isMobileSidebarOpen && (
         <div 
@@ -137,9 +137,9 @@ export default function Layout({ children }) {
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 flex flex-col lg:ml-0">
+      <main className="flex-1 flex flex-col lg:ml-0 min-w-0 overflow-x-hidden">
         {/* Mobile Header */}
-        <header className="lg:hidden bg-surface border-b border-border p-4 flex items-center justify-between">
+        <header className="lg:hidden bg-surface border-b border-border p-4 flex items-center justify-between min-w-0">
           <button
             onClick={toggleMobileSidebar}
             className="p-2 rounded-lg hover:bg-surfaceHover transition-colors"
@@ -151,7 +151,7 @@ export default function Layout({ children }) {
         </header>
 
         {/* Page Content */}
-        <div className="flex-1 overflow-y-auto">
+        <div className="flex-1 overflow-y-auto overflow-x-hidden min-w-0">
           {children}
         </div>
       </main>
