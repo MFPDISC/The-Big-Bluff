@@ -12,8 +12,10 @@ import BubbleWatch from './pages/BubbleWatch';
 import Thesis from './pages/Thesis';
 
 function App() {
+  const basename = import.meta.env.PROD ? '/The-Big-Bluff' : '';
+
   return (
-    <Router>
+    <Router basename={basename}>
       <Layout>
         <Routes>
           <Route path="/" element={<Dashboard />} />

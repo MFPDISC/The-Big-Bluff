@@ -2,6 +2,7 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 
 export default defineConfig({
+  base: '/The-Big-Bluff/',
   plugins: [react()],
   preview: {
     allowedHosts: ['bigbluff.btcnews.co.za', 'localhost', '127.0.0.1']

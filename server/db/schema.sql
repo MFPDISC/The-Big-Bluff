@@ -41,6 +41,9 @@ CREATE TABLE financials (
     year INTEGER,
     total_debt BIGINT,
     total_equity BIGINT,
+    cash_on_hand BIGINT,
+    total_cash BIGINT,
+    short_term_investments BIGINT,
     ebit BIGINT,
     interest_expense BIGINT,
     free_cash_flow BIGINT,
@@ -228,6 +231,15 @@ CREATE TABLE alerts (
 );
 
 CREATE INDEX idx_alerts_active ON alerts(is_active, date DESC);
+
+-- Data Cache (for API response caching)
+CREATE TABLE data_cache (
+    cache_key TEXT PRIMARY KEY,
+    data JSONB NOT NULL,
+    created_at TIMESTAMP DEFAULT NOW(),
+    expires_at TIMESTAMP NOT NULL,
+    last_refreshed TIMESTAMP DEFAULT NOW()
+);
 
 -- ============================================
 -- INDEXES FOR PERFORMANCE

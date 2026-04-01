@@ -76,7 +76,7 @@ const aggressiveLimiter = rateLimit({
 // 💰 Expensive endpoints (data fetching)
 const expensiveLimiter = rateLimit({
   windowMs: 10 * 60 * 1000, // 10 minutes
-  max: 50, // Reasonable limit for data endpoints
+  max: process.env.NODE_ENV === 'development' ? 500 : 100, // Increased for development
   message: {
     error: 'Rate limit exceeded for data endpoints',
     retryAfter: '10 minutes'
@@ -138,10 +138,10 @@ app.use(cors({
       'https://bigbluff.btcnews.co.za',
       'http://localhost:3302' // Vite dev server
     ];
-    
+
     // Allow requests with no origin (mobile apps, etc.)
     if (!origin) return callback(null, true);
-    
+
     if (allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
@@ -174,14 +174,14 @@ app.use((req, res, next) => {
     /\.git/i,
     /\.sql$/i
   ];
-  
+
   const isSuspicious = suspiciousPatterns.some(pattern => pattern.test(req.path));
-  
+
   if (isSuspicious) {
     console.warn(`🚨 Suspicious request detected: ${req.ip} -> ${req.path}`);
     return aggressiveLimiter(req, res, next);
   }
-  
+
   next();
 });
 
@@ -196,8 +196,8 @@ app.use((req, res, next) => {
 
 // Health check
 app.get('/health', (req, res) => {
-  res.json({ 
-    status: 'ok', 
+  res.json({
+    status: 'ok',
     timestamp: new Date().toISOString(),
     uptime: process.uptime(),
     security: 'protected'
@@ -217,7 +217,7 @@ app.get('/api/security/status', authLimiter, (req, res) => {
     protections: [
       'DDoS Protection',
       'Rate Limiting',
-      'CORS Protection', 
+      'CORS Protection',
       'Helmet Security Headers',
       'Suspicious Pattern Detection',
       'Request Size Limits'
@@ -243,7 +243,7 @@ app.use((req, res) => {
 // Error handler
 app.use((err, req, res, next) => {
   console.error('Error:', err);
-  res.status(500).json({ 
+  res.status(500).json({
     error: 'Internal server error',
     message: process.env.NODE_ENV === 'development' ? err.message : undefined
   });
@@ -252,7 +252,7 @@ app.use((err, req, res, next) => {
 // WebSocket connection
 io.on('connection', (socket) => {
   console.log('Client connected:', socket.id);
-  
+
   socket.on('disconnect', () => {
     console.log('Client disconnected:', socket.id);
   });

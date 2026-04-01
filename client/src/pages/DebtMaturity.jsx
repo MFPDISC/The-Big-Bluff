@@ -72,6 +72,16 @@ export default function DebtMaturity() {
 
   const fetchCompanyMaturities = async (symbol) => {
     try {
+      console.log('🏨 Fetching debt maturity data from smart cache...');
+      
+      // First check data freshness
+      try {
+        const statusRes = await axios.get('/api/stocks/data-status');
+        console.log('📊 Data freshness:', statusRes.data.summary);
+      } catch (statusError) {
+        console.log('Could not check data status:', statusError.message);
+      }
+      
       const response = await axios.get(`/api/debt-maturity/company/${symbol}`);
       setCompanyMaturities(response.data);
     } catch (error) {

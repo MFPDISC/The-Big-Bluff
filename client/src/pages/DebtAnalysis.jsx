@@ -8,6 +8,7 @@ export default function DebtAnalysis() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [tableFilter, setTableFilter] = useState('top10');
+  const [retryInfo, setRetryInfo] = useState(null);
   const hasFetched = useRef(false);
 
   useEffect(() => {
@@ -18,35 +19,87 @@ export default function DebtAnalysis() {
     }
   }, []);
 
-  const fetchDebtData = async () => {
+  const fetchDebtData = async (retryCount = 0) => {
     try {
       setLoading(true);
       setError(null);
       
-      const companiesRes = await axios.get('/api/stocks/companies');
+      console.log('🏨 Using smart batch endpoint to avoid rate limits...');
       
-      const enrichedData = await Promise.all(
-        companiesRes.data.map(async (company) => {
-          try {
-            const financials = await axios.get(`/api/stocks/financials/${company.symbol}`);
-            return {
-              ...company,
-              ...financials.data.metrics,
-              financials: financials.data.financials
-            };
-          } catch (error) {
-            console.warn(`Failed to fetch financials for ${company.symbol}:`, error);
-            return company;
-          }
-        })
-      );
+      // Use the new batch endpoint that intelligently caches data
+      const batchRes = await axios.get('/api/stocks/financials-batch', {
+        timeout: 30000 // 30 second timeout
+      });
       
-      setCompanies(enrichedData);
+      if (batchRes.data.success) {
+        const enrichedData = Object.values(batchRes.data.data).map(item => ({
+          id: item.company.symbol, // Add ID for React keys
+          symbol: item.company.symbol,
+          name: item.company.name,
+          market_cap: item.company.marketCap,
+          ...item.metrics,
+          financials: item.financials
+        }));
+        
+        console.log(`🏨 Loaded ${enrichedData.length} companies (${batchRes.data.cached} from cache)`);
+        setCompanies(enrichedData);
+      } else {
+        throw new Error('Batch request failed');
+      }
+      
       setLoading(false);
     } catch (error) {
       console.error('Error fetching debt data:', error);
-      setError(`Failed to load debt analysis: ${error.message}`);
-      setLoading(false);
+      
+      // Handle rate limiting with exponential backoff
+      if (error.response?.status === 429 && retryCount < 3) {
+        const delay = Math.pow(2, retryCount) * 2000; // 2s, 4s, 8s
+        console.log(`🔄 Rate limited. Retrying in ${delay/1000}s... (attempt ${retryCount + 1}/3)`);
+        
+        setRetryInfo({
+          attempt: retryCount + 1,
+          maxAttempts: 3,
+          delay: delay / 1000
+        });
+        setError(`Rate limited. Retrying in ${delay/1000} seconds... (attempt ${retryCount + 1}/3)`);
+        
+        setTimeout(() => {
+          setRetryInfo(null);
+          fetchDebtData(retryCount + 1);
+        }, delay);
+        return;
+      }
+      
+      // Fallback to individual requests if batch fails
+      console.log('🔄 Falling back to individual requests...');
+      try {
+        const companiesRes = await axios.get('/api/stocks/companies');
+        
+        const enrichedData = await Promise.all(
+          companiesRes.data.slice(0, 5).map(async (company) => { // Limit to 5 to avoid rate limits
+            try {
+              const financials = await axios.get(`/api/stocks/financials/${company.symbol}`);
+              return {
+                ...company,
+                ...financials.data.metrics,
+                financials: financials.data.financials
+              };
+            } catch (error) {
+              console.warn(`Failed to fetch financials for ${company.symbol}:`, error);
+              return company;
+            }
+          })
+        );
+        
+        setCompanies(enrichedData);
+        setLoading(false);
+      } catch (fallbackError) {
+        const errorMessage = fallbackError.response?.status === 429 
+          ? 'Request failed with status code 429' 
+          : fallbackError.message;
+        setError(`Failed to load debt analysis: ${errorMessage}`);
+        setLoading(false);
+      }
     }
   };
 
@@ -74,9 +127,23 @@ export default function DebtAnalysis() {
             Corporate debt levels, leverage ratios, and bankruptcy risk indicators
           </p>
         </div>
-        <div className="flex items-center justify-center py-12">
+        <div className="flex flex-col items-center justify-center py-12">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
           <span className="ml-4 text-lg">Loading debt analysis data...</span>
+          
+          {retryInfo && (
+            <div className="mt-4 text-center">
+              <div className="text-sm text-warning">
+                Rate limited - Retrying in {retryInfo.delay}s (attempt {retryInfo.attempt}/{retryInfo.maxAttempts})
+              </div>
+              <div className="w-64 bg-surface rounded-full h-2 mt-2">
+                <div 
+                  className="bg-warning h-2 rounded-full transition-all duration-1000"
+                  style={{ width: `${((retryInfo.maxAttempts - retryInfo.attempt + 1) / retryInfo.maxAttempts) * 100}%` }}
+                ></div>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     );
@@ -97,12 +164,34 @@ export default function DebtAnalysis() {
             <h2 className="text-xl font-semibold text-danger">Unable to Load Data</h2>
           </div>
           <p className="text-textSecondary mb-4">{error}</p>
-          <button 
-            onClick={fetchDebtData}
-            className="bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary/80 transition-colors"
-          >
-            Try Again
-          </button>
+          
+          {error.includes('429') && (
+            <div className="bg-warning/10 border border-warning rounded-lg p-4 mb-4">
+              <div className="flex items-center mb-2">
+                <AlertTriangle className="w-5 h-5 text-warning mr-2" />
+                <span className="font-semibold text-warning">Rate Limit Information</span>
+              </div>
+              <p className="text-sm text-textSecondary">
+                The financial data API has rate limits to prevent abuse. This error occurs when too many requests are made in a short time. 
+                The system will automatically retry with exponential backoff, or you can wait a few minutes and try again.
+              </p>
+            </div>
+          )}
+          
+          <div className="flex gap-3">
+            <button 
+              onClick={() => fetchDebtData(0)}
+              className="bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary/80 transition-colors"
+            >
+              Try Again
+            </button>
+            <button 
+              onClick={() => window.location.reload()}
+              className="bg-surface border border-border text-textPrimary px-4 py-2 rounded-lg hover:bg-surfaceHover transition-colors"
+            >
+              Refresh Page
+            </button>
+          </div>
         </div>
       </div>
     );

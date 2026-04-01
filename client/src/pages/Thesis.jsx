@@ -244,7 +244,7 @@ Currently set at 78% based on historical correlation patterns during stress peri
           "The market can stay irrational longer than you can stay solvent. But eventually, math wins. 
           And the math suggests: refinancing $150 billion at 2-3x the cost may create significant stress—the question is whether something breaks."
         </p>
-        <p className="text-textSecondary text-sm">— Reece Till</p>
+        <p className="text-textSecondary text-sm">— The Big Bluff Analysis</p>
       </section>
 
       {/* Executive Summary */}
